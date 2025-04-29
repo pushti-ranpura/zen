@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zen - Task Manager</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app">
+        <header>
+            <div class="mode-pill-dropdown">
+                <button class="mode-pill">
+                    <span class="current-mode">Plan mode</span>
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+                <div class="mode-options">
+                    <div class="mode-option" data-mode="plan">Plan mode</div>
+                    <div class="mode-option" data-mode="execute">Execute mode</div>
+                </div>
+            </div>
+        </header>
+        
+        <main>
+            <div class="plan-mode">
+                <h2 id="screenTitle">Add your main tasks</h2>
+                
+                <div class="task-container">
+                    <div class="task-list">
+                        <!-- Tasks will be inserted here -->
+                    </div>
+
+                    <div class="task-input-container collapsed">
+                        <div class="task-input-trigger">
+                            <i class="fas fa-plus"></i>
+                            <span>Add a task</span>
+                        </div>
+                        <div class="task-input-fields">
+                            <input type="text" id="taskInput" placeholder="Write main task" class="task-input">
+                            <div class="task-controls">
+                                <div class="custom-select">
+                                    <div class="select-trigger" id="labelTrigger">
+                                        <span>Label</span>
+                                        <i class="fas fa-chevron-down"></i>
+                                    </div>
+                                    <div class="select-dropdown" id="labelDropdown">
+                                        <div class="select-option" data-value="leverage">
+                                            <div class="label-icon leverage">L</div>
+                                            <span>Leverage</span>
+                                        </div>
+                                        <div class="select-option" data-value="neutral">
+                                            <div class="label-icon neutral">N</div>
+                                            <span>Neutral</span>
+                                        </div>
+                                        <div class="select-option" data-value="overhead">
+                                            <div class="label-icon overhead">O</div>
+                                            <span>Overhead</span>
+                                        </div>
+                                    </div>
+                                    <select id="labelSelect" class="hidden-select">
+                                        <option value="" disabled selected>Label</option>
+                                        <option value="leverage">Leverage</option>
+                                        <option value="neutral">Neutral</option>
+                                        <option value="overhead">Overhead</option>
+                                    </select>
+                                </div>
+                                <select id="timeSelect" class="time-select">
+                                    <option value="" disabled selected>Time</option>
+                                    <option value="30">30m</option>
+                                    <option value="60">1h</option>
+                                    <option value="90">1h 30m</option>
+                                    <option value="120">2h</option>
+                                    <option value="150">2h 30m</option>
+                                    <option value="180">3h</option>
+                                </select>
+                                <button id="addTask" class="add-btn">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="execute-mode" style="display: none;">
+                <div class="execute-content">
+                    <h2 class="execute-title">Pick a task to begin</h2>
+                    <div class="done-criteria-display" style="display: none;"></div>
+                    
+                    <div class="timer-display">
+                        <div class="timer">00:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn play-pause-btn" disabled>
+                                <i class="fas fa-play"></i>
+                            </button>
+                            <button class="timer-btn reset-btn" disabled>
+                                <i class="fas fa-redo"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button class="pick-task-btn">Pick task</button>
+                </div>
+
+                <!-- Empty State -->
+                <div class="empty-state" style="display: none;">
+                    <div class="empty-state-content">
+                        <h2>No tasks added</h2>
+                        <p>Create tasks in the 'Plan mode' to start executing them.</p>
+                        <button class="switch-mode-btn">Switch mode</button>
+                    </div>
+                </div>
+
+                <button class="list-view-btn">
+                    <i class="fas fa-list"></i>
+                </button>
+
+                <div class="action-bar">
+                    <button class="finish-btn" style="display: none;">Finish</button>
+                </div>
+            </div>
+            
+            <div class="task-panel">
+                <div class="task-panel-header">
+                    <h3>Select a task</h3>
+                    <button class="close-panel-btn">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="task-panel-content">
+                    <div class="subtask-list-execute">
+                        <!-- Subtasks will be inserted here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-bar">
+                <button id="backBtn" class="back-btn">Back</button>
+                <button id="nextBtn" class="next-btn">Next</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Subtasks -->
+    <div id="subtaskModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle"></h3>
+                <span id="modalTime" class="modal-time"></span>
+            </div>
+            <div class="modal-body">
+                <div id="subtaskList" class="subtask-list">
+                    <!-- Subtasks will be inserted here -->
+                </div>
+                <button id="addNewSubtask" class="add-new-subtask-btn">+ Add Subtask</button>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSubtasks" class="save-btn" disabled>Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Task edit template -->
+    <template id="editTimeTemplate">
+        <select class="time-edit-select">
+            <option value="30">30m</option>
+            <option value="60">1h</option>
+            <option value="90">1h 30m</option>
+            <option value="120">2h</option>
+            <option value="150">2h 30m</option>
+            <option value="180">3h</option>
+        </select>
+    </template>
+
+    <template id="editLabelTemplate">
+        <div class="custom-select edit-select">
+            <div class="select-dropdown show">
+                <div class="select-option" data-value="leverage">
+                    <div class="label-icon leverage">L</div>
+                    <span>Leverage</span>
+                </div>
+                <div class="select-option" data-value="neutral">
+                    <div class="label-icon neutral">N</div>
+                    <span>Neutral</span>
+                </div>
+                <div class="select-option" data-value="overhead">
+                    <div class="label-icon overhead">O</div>
+                    <span>Overhead</span>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- Templates -->
+    <template id="subtaskTemplate">
+        <div class="subtask-item collapsed">
+            <div class="subtask-basic">
+                <div class="subtask-input-group">
+                    <input type="text" class="subtask-title" placeholder="Add your subtask">
+                    <div class="time-input-group">
+                        <button class="time-stepper-btn minus">-</button>
+                        <input type="number" class="subtask-time" min="15" step="15" value="15">
+                        <span class="time-unit">mins</span>
+                        <button class="time-stepper-btn plus">+</button>
+                    </div>
+                </div>
+            </div>
+            <div class="subtask-details">
+                <div class="done-criteria">
+                    <span class="done-text">Done when</span>
+                    <div class="criteria-group">
+                        <div class="input-group">
+                            <input type="number" class="quantity-input" value="1" min="1">
+                            <label class="input-label">quantity</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="deliverable-input" placeholder="wireframes, etc">
+                            <label class="input-label">Deliverable</label>
+                        </div>
+                        <div class="input-group">
+                            <input type="text" class="action-input" placeholder="drafted, etc">
+                            <label class="input-label">Action</label>
+                        </div>
+                        <span class="with-text">with</span>
+                        <div class="input-group">
+                            <input type="text" class="quality-input" placeholder="core userflow for review">
+                            <label class="input-label">Quality</label>
+                        </div>
+                    </div>
+                </div>
+                <button class="add-subtask-card-btn">Add</button>
+            </div>
+        </div>
+    </template>
+
+    <!-- Task Completion Modal -->
+    <div id="completionModal" class="modal completion-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Task completed?</h3>
+            </div>
+            <div class="modal-body">
+                <div class="task-info">
+                    <h4 id="completionTaskTitle"></h4>
+                    <p id="completionDoneCriteria" class="done-criteria"></p>
+                </div>
+                <div class="notes-section">
+                    <label for="completionNotes">Notes</label>
+                    <textarea id="completionNotes" placeholder="Reflect how you did..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="secondary-btn no-btn">
+                    <i class="fas fa-frown"></i>
+                    No
+                </button>
+                <button class="secondary-btn yes-btn">
+                    <i class="fas fa-smile"></i>
+                    Yes
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add confetti canvas -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html> 
